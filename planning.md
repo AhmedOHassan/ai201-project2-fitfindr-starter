@@ -43,7 +43,7 @@ Given a thrifted item and the user's existing wardrobe, uses an LLM (Groq llama-
 A string containing 1–2 outfit suggestions (2–4 sentences). Example: "Pair this faded band tee with your baggy dark wash jeans and chunky white sneakers for that authentic 90s grunge aesthetic. Layer your vintage black denim jacket over it. Roll the sleeves once to show the distressing."
 
 **What happens if it fails or returns nothing:**
-If wardrobe["items"] is empty (new user, no wardrobe entered), the LLM still returns a useful string with general styling advice based on the item's category and style_tags alone: "This faded band tee has a vintage grunge aesthetic. Try pairing with high-waisted baggy denim and chunky boots for an authentic 90s look." The agent does not crash or return empty.
+If wardrobe["items"] is empty (new user, no wardrobe entered), the LLM still returns a useful string with general styling advice based on the item's category and style_tags alone: "This faded band tee has a vintage grunge aesthetic. Try pairing with high-waisted baggy denim and chunky boots for an authentic 90s look." If the API call itself fails, I still return a local fallback styling sentence instead of crashing or returning empty.
 
 ---
 
@@ -60,7 +60,7 @@ Given an outfit suggestion string and the new item details, uses an LLM to gener
 A string caption, typically 1–3 sentences with 1–3 relevant emojis, that reads like an authentic social media post. Example: "grabbed this faded band tee off depop for $19 and the distressed graphic hits different 🖤 pairs perfectly with my baggy jeans and chunky sneakers. vintage grunge is SO the move".
 
 **What happens if it fails or returns nothing:**
-If outfit string is empty or None, return a descriptive error message string: "Unable to generate fit card, outfit suggestion was incomplete. Try searching for a different item." The agent does not crash or raise an exception.
+If outfit string is empty or None, return a descriptive error message string: "Unable to generate fit card, outfit suggestion was incomplete. Try searching for a different item." If the API call fails, return a short fallback caption instead of crashing.
 
 ---
 
