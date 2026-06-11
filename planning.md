@@ -136,14 +136,29 @@ Write out what a full user interaction looks like from start to finish — tool 
 
 **Example user query:** "I'm looking for a vintage graphic tee under $30. I mostly wear baggy jeans and chunky sneakers. What's out there and how would I style it?"
 
-**Step 1:**
-<!-- What does the agent do first? Which tool is called? With what input? -->
+**Overview:** FitFindr's job is to take a natural language search query, find matching secondhand listings, evaluate how they fit with what the user already owns, and create a shareable outfit description. If search_listings returns empty results or suggest_outfit fails, the agent communicates that to the user and stops it doesn't proceed with garbage input.
 
-**Step 2:**
-<!-- What happens next? What was returned from step 1? What tool is called now? -->
+**Step 1:** Parse and search
+- Agent extracts from the query: description="vintage graphic tee", size=None (not mentioned), max_price=30.0
+- Calls search_listings("vintage graphic tee", None, 30.0)
+- Returns matching listings like [{"id": "lst_033", "title": "Vintage Band Tee — Faded Grey", "description": "Faded grey band-style tee with distressed graphic. Crew neck. Fits boxy. Well-loved but no holes or major damage.", "category": "tops", "style_tags": ["vintage", "grunge", "band tee", "graphic tee", "streetwear"], "size": "L", "condition": "fair", "price": 19.00, "colors": ["grey", "charcoal"], "brand": null, "platform": "depop"}, ...]
+- Agent stores top result in session["selected_item"] and proceeds to next tool
 
-**Step 3:**
-<!-- Continue until the full interaction is complete -->
+**Step 2:** Suggest outfit
+- Agent calls suggest_outfit(new_item=<band tee from step 1>, wardrobe=<user's wardrobe>)
+- LLM sees user has: baggy dark wash jeans, chunky white sneakers, black combat boots, vintage black denim jacket, grey sweatshirt
+- LLM considers the item: faded grey band tee (boxy fit, vintage grunge style)
+- Returns: "Pair this faded band tee with your baggy dark wash jeans and chunky white sneakers for that authentic 90s grunge aesthetic. Layer your vintage black denim jacket over it. Roll the sleeves once to show the distressing and add some dimension. Tuck just the front corner slightly into your jeans for a subtle fitted look that balances the boxy tee."
+- Agent stores this in session["outfit_suggestion"]
+
+**Step 3:** Create fit card
+- Agent calls create_fit_card(outfit=<suggestion from step 2>, new_item=<band tee>)
+- LLM generates a shareable Instagram-style caption using the actual listing details (title, price, platform, condition)
+- Returns: "grabbed this faded band tee off depop for $19 and the distressed graphic hits different 🖤 pairs perfectly with my baggy jeans and chunky sneakers. vintage grunge is SO the move"
+- Agent stores in session["fit_card"]
 
 **Final output to user:**
-<!-- What does the user actually see at the end? -->
+The user sees three panels:
+1. **Listing details:** "Vintage Band Tee — Faded Grey | Depop | $19.00 | Fair condition | Style: vintage, grunge, band tee, graphic tee, streetwear | Size: L | Colors: grey, charcoal"
+2. **Outfit suggestion:** "Pair this faded band tee with your baggy dark wash jeans and chunky white sneakers for that authentic 90s grunge aesthetic. Layer your vintage black denim jacket over it..."
+3. **Fit card:** "grabbed this faded band tee off depop for $19 and the distressed graphic hits different 🖤 pairs perfectly with my baggy jeans and chunky sneakers. vintage grunge is SO the move"
