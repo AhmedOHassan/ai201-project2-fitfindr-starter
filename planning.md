@@ -219,24 +219,24 @@ Write out what a full user interaction looks like from start to finish — tool 
 **Step 1:** Parse and search
 - Agent extracts from the query: description="vintage graphic tee", size=None (not mentioned), max_price=30.0
 - Calls search_listings("vintage graphic tee", None, 30.0)
-- Returns matching listings like [{"id": "lst_033", "title": "Vintage Band Tee — Faded Grey", "description": "Faded grey band-style tee with distressed graphic. Crew neck. Fits boxy. Well-loved but no holes or major damage.", "category": "tops", "style_tags": ["vintage", "grunge", "band tee", "graphic tee", "streetwear"], "size": "L", "condition": "fair", "price": 19.00, "colors": ["grey", "charcoal"], "brand": null, "platform": "depop"}, ...]
+- Returns matching listings like [{"id": "lst_006", "title": "Graphic Tee — 2003 Tour Bootleg Style", "description": "Vintage-style bootleg tee with faded graphic. Slightly boxy fit. 100% cotton, soft and worn-in.", "category": "tops", "style_tags": ["graphic tee", "vintage", "grunge", "streetwear", "band tee"], "size": "L", "condition": "good", "price": 24.00, "colors": ["black"], "brand": null, "platform": "depop"}, ...]
 - Agent stores top result in session["selected_item"] and proceeds to next tool
 
 **Step 2:** Suggest outfit
 - Agent calls suggest_outfit(new_item=<band tee from step 1>, wardrobe=<user's wardrobe>)
-- LLM sees user has: baggy dark wash jeans, chunky white sneakers, black combat boots, vintage black denim jacket, grey sweatshirt
-- LLM considers the item: faded grey band tee (boxy fit, vintage grunge style)
-- Returns: "Pair this faded band tee with your baggy dark wash jeans and chunky white sneakers for that authentic 90s grunge aesthetic. Layer your vintage black denim jacket over it. Roll the sleeves once to show the distressing and add some dimension. Tuck just the front corner slightly into your jeans for a subtle fitted look that balances the boxy tee."
+- LLM sees user has: baggy straight-leg jeans, wide-leg khaki trousers, white ribbed tank top, oversized grey crewneck sweatshirt, black combat boots, vintage black denim jacket, chunky white sneakers
+- LLM considers the item: Graphic Tee — 2003 Tour Bootleg Style (vintage, grunge, boxy fit)
+- Returns: "I've got two outfit suggestions for the Graphic Tee — 2003 Tour Bootleg Style:\n\n1. **Grunge Revival**: Pair the graphic tee with the Baggy straight-leg jeans and Black combat boots. The bootleg tee's faded graphic and boxy fit will perfectly complement the baggy jeans, creating a nostalgic grunge look. Add the Vintage black denim jacket on top for a classic touch. Styling tip: Roll up the sleeves of the tee to add a relaxed vibe.\n2. **Streetwear Chic**: Combine the graphic tee with the Wide-leg khaki trousers and Chunky white sneakers. The contrast between the vintage-inspired tee and the earthy-toned trousers will create a fresh, streetwear-inspired look. Styling tip: Tuck the front of the tee into the trousers to break up the volume and add a sleek touch."
 - Agent stores this in session["outfit_suggestion"]
 
 **Step 3:** Create fit card
 - Agent calls create_fit_card(outfit=<suggestion from step 2>, new_item=<band tee>)
 - LLM generates a shareable Instagram-style caption using the actual listing details (title, price, platform, condition)
-- Returns: "grabbed this faded band tee off depop for $19 and the distressed graphic hits different 🖤 pairs perfectly with my baggy jeans and chunky sneakers. vintage grunge is SO the move"
+- Returns: "Just threw on my fave Graphic Tee — 2003 Tour Bootleg Style and I'm feeling like I'm back in the 90s 🎸. Paired it with some baggy straight-leg jeans and black combat boots for a grunge revival vibe that's totally on point. Scored this sick tee on depop for $24.00 and it's been a staple in my wardrobe ever since - the perfect combo of comfort and edge 💯."
 - Agent stores in session["fit_card"]
 
 **Final output to user:**
 The user sees three panels:
-1. **Listing details:** "Vintage Band Tee — Faded Grey | Depop | $19.00 | Fair condition | Style: vintage, grunge, band tee, graphic tee, streetwear | Size: L | Colors: grey, charcoal"
-2. **Outfit suggestion:** "Pair this faded band tee with your baggy dark wash jeans and chunky white sneakers for that authentic 90s grunge aesthetic. Layer your vintage black denim jacket over it..."
-3. **Fit card:** "grabbed this faded band tee off depop for $19 and the distressed graphic hits different 🖤 pairs perfectly with my baggy jeans and chunky sneakers. vintage grunge is SO the move"
+1. **Listing details:** "Graphic Tee — 2003 Tour Bootleg Style | Depop | $24.00 | Good condition | Style: graphic tee, vintage, grunge, streetwear, band tee | Size: L | Colors: black"
+2. **Outfit suggestion:** "I've got two outfit suggestions for the Graphic Tee — 2003 Tour Bootleg Style: ... Grunge Revival ... Streetwear Chic ..."
+3. **Fit card:** "Just threw on my fave Graphic Tee — 2003 Tour Bootleg Style and I'm feeling like I'm back in the 90s 🎸... the perfect combo of comfort and edge 💯."

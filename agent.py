@@ -18,6 +18,8 @@ Usage (once implemented):
     print(result["error"])   # None on success
 """
 
+import re
+
 from tools import search_listings, suggest_outfit, create_fit_card
 
 
@@ -92,9 +94,68 @@ def run_agent(query: str, wardrobe: dict) -> dict:
     Before writing code, complete the Planning Loop and State Management sections
     of planning.md — your implementation should match what you described there.
     """
-    # TODO: implement the planning loop
     session = _new_session(query, wardrobe)
-    session["error"] = "Planning loop not yet implemented."
+
+    def _parse_query(raw_query: str) -> dict:
+        normalized = raw_query.strip()
+        lowered = normalized.lower()
+
+        max_price = None
+        price_match = re.search(
+            r"(?:under|below|less than|max(?:imum)? price(?: of)?|budget(?: of)?)\s*\$?(\d+(?:\.\d+)?)",
+            lowered,
+        )
+        if price_match:
+            max_price = float(price_match.group(1))
+
+        size = None
+        size_match = re.search(r"(?:size|sz\.?|fit(?:s)? like)\s*([a-z0-9\/\-() ]+)", normalized, flags=re.IGNORECASE)
+        if size_match:
+            size_candidate = size_match.group(1).strip()
+            size = size_candidate.split(" ")[0].strip(" ,.;") if size_candidate else None
+        else:
+            explicit_size_match = re.search(r"\b(xxs|xs|s|m|l|xl|xxl|xxxl)\b", lowered)
+            if explicit_size_match:
+                size = explicit_size_match.group(1).upper()
+
+        description = normalized
+        if price_match:
+            description = re.sub(price_match.group(0), "", description, flags=re.IGNORECASE)
+        if size_match:
+            description = re.sub(size_match.group(0), "", description, flags=re.IGNORECASE)
+        description = re.sub(r"\b(size|sz\.?|under|below|less than|budget|price|want|looking for|find me|search for)\b", "", description, flags=re.IGNORECASE)
+        description = re.sub(r"\b(in|for)\b", "", description, flags=re.IGNORECASE)
+        description = re.sub(r"\$?\d+(?:\.\d+)?", "", description)
+        description = re.sub(r"\s+", " ", description).strip(" ,.;")
+
+        if not description:
+            description = normalized
+
+        return {
+            "description": description,
+            "size": size,
+            "max_price": max_price,
+        }
+
+    session["parsed"] = _parse_query(query)
+
+    search_results = search_listings(
+        session["parsed"]["description"],
+        session["parsed"]["size"],
+        session["parsed"]["max_price"],
+    )
+    session["search_results"] = search_results
+
+    if not search_results:
+        session["error"] = (
+            f'No listings matched "{session["parsed"]["description"]}". '
+            "Try different keywords, a higher budget, or skip the size filter."
+        )
+        return session
+
+    session["selected_item"] = search_results[0]
+    session["outfit_suggestion"] = suggest_outfit(session["selected_item"], session["wardrobe"])
+    session["fit_card"] = create_fit_card(session["outfit_suggestion"], session["selected_item"])
     return session
 
 
